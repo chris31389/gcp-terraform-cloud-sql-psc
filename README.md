@@ -1,10 +1,10 @@
 # gcp-terraform-cloud-sql-psc
 
-This repo is set up to run as a Terraform root module and includes a reusable module that creates a simple GCP resource (a Google Cloud Storage bucket).
+This repo is set up to run as a Terraform root module and includes a reusable module that creates a Cloud SQL for PostgreSQL instance using PSA + PSC.
 
 ## What it deploys
 
-- `module.gcs_bucket`: a single `google_storage_bucket`
+- `module.postgres`: a Cloud SQL for PostgreSQL instance (private IP via PSA, PSC enabled)
 
 ## Using Terraform Cloud (terraform.io) with VCS integration
 
@@ -16,7 +16,7 @@ This repo is set up to run as a Terraform root module and includes a reusable mo
 
 **Option A: Service Account JSON (simplest to start)**
 
-- Create a GCP service account with permissions to create storage buckets (e.g. `roles/storage.admin`), and generate a JSON key.
+- Create a GCP service account with permissions to create Cloud SQL instances and set up service networking.
 - In Terraform Cloud workspace variables, add an **Environment Variable**:
   - `GOOGLE_CREDENTIALS` = *(paste the full JSON key contents)*
 
@@ -29,12 +29,11 @@ Use Terraform Cloud's OIDC integration with a Google Cloud Workload Identity Pro
 Set these as **Terraform Variables** in the workspace:
 
 - `project_id` (string) — your GCP project ID
-- `bucket_name` (string) — must be globally unique
+- `cloudsql_instance_name` (string) — defaults to `tf-pg-demo`
 
 Optional:
 
 - `region` (string) — defaults to `us-central1`
-- `labels` (map(string))
 
 ## Local usage (optional)
 
@@ -51,4 +50,4 @@ Then:
 
 ## Module
 
-See `modules/gcs_bucket` for the reusable bucket module.
+See `modules/cloudsql_postgres_psa_psc` for the reusable Cloud SQL module.

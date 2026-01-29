@@ -3,12 +3,12 @@ provider "google" {
   region  = var.region
 }
 
-module "gcs_bucket" {
-  source = "./modules/gcs_bucket"
+module "postgres" {
+  source = "./modules/cloudsql_postgres_psa_psc"
 
-  name          = var.bucket_name
-  location      = var.region
-  force_destroy = false
-  versioning    = true
-  labels        = var.labels
+  region        = var.region
+  instance_name = var.cloudsql_instance_name
+
+  # Allow PSC endpoints from this same project by default.
+  psc_allowed_consumer_projects = toset([var.project_id])
 }

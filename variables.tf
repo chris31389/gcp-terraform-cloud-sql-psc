@@ -9,13 +9,8 @@ variable "region" {
   default     = "us-central1"
 }
 
-variable "bucket_name" {
-  description = "Globally-unique GCS bucket name (e.g., my-org-tf-demo-12345)."
+variable "cloudsql_instance_name" {
+  description = "Cloud SQL instance name to create."
   type        = string
-}
-
-variable "labels" {
-  description = "Labels to apply to created resources."
-  type        = map(string)
-  default     = {}
+  default     = "tf-pg-demo"
 }

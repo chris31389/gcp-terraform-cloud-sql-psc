@@ -13,3 +13,6 @@ terraform.rc
 # Local-only convenience files
 *.auto.tfvars
 *.auto.tfvars.json
+
+# Local analysis artifacts
+_schema.json
