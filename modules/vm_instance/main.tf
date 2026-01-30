@@ -94,7 +94,7 @@ resource "google_compute_instance" "this" {
   }
 
   service_account {
-    email  = var.service_account_email != null ? var.service_account_email : data.google_compute_default_service_account.this.email
+    email  = var.service_account_email != null ? var.service_account_email : "default"
     scopes = var.service_account_scopes
   }
 
