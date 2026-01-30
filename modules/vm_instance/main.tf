@@ -64,7 +64,10 @@ resource "google_compute_instance" "this" {
   machine_type = var.machine_type
 
   lifecycle {
-    ignore_changes = [metadata["ssh-keys"]]
+    ignore_changes = [
+      metadata["ssh-keys"],
+      service_account[0].email
+    ]
   }
 
   allow_stopping_for_update = var.allow_stopping_for_update
