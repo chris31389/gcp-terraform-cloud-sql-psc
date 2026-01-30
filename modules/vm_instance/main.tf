@@ -40,6 +40,8 @@ resource "google_compute_instance" "this" {
   zone         = var.zone
   machine_type = var.machine_type
 
+  allow_stopping_for_update = var.allow_stopping_for_update
+
   labels = var.labels
   tags   = local.effective_tags
 

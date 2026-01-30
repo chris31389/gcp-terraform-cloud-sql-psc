@@ -30,6 +30,12 @@ variable "spot" {
   default     = true
 }
 
+variable "allow_stopping_for_update" {
+  description = "Whether Terraform is allowed to stop the instance to apply certain updates."
+  type        = bool
+  default     = true
+}
+
 variable "boot_disk_size_gb" {
   description = "Boot disk size in GB."
   type        = number
