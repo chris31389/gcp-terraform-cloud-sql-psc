@@ -14,7 +14,6 @@ module "postgres" {
 }
 
 module "vm" {
-  count  = var.create_vm ? 1 : 0
   source = "./modules/vm_instance"
 
   project_id = var.project_id
