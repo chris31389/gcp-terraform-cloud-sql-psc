@@ -11,6 +11,7 @@ module "postgres" {
 
   # Allow PSC endpoints from this same project by default.
   psc_allowed_consumer_projects = toset([var.project_id])
+  psc_enabled                   = false
 }
 
 module "vm" {
