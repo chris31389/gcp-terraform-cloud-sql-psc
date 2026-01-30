@@ -6,6 +6,7 @@ This repo is set up to run as a Terraform root module and includes a reusable mo
 
 - `module.postgres`: a Cloud SQL for PostgreSQL instance (private IP via PSA)
 - `modules/vm_instance`: a minimal-cost GCE VM module (optional)
+- `modules/dms_psc_producer`: optional PSC producer setup for DMS destination private IP connectivity (keeps Cloud SQL itself non-PSC-enabled)
 
 ## Using Terraform Cloud (terraform.io) with VCS integration
 
@@ -53,3 +54,12 @@ Then:
 
 See `modules/cloudsql_postgres_psa_psc` for the reusable Cloud SQL module.
 See `modules/cloudsql_postgres_psa_only` for the reusable Cloud SQL module.
+
+## DMS to Cloud SQL (private IP destination, Cloud SQL NOT PSC-enabled)
+
+If you need Database Migration Service (DMS) to migrate **into** a Cloud SQL private IP instance **without enabling PSC on the Cloud SQL instance**, this repo includes an optional PSC producer setup.
+
+- Enable it by setting `dms_psc_producer_enabled=true`.
+- After apply, use `dms_psc_service_attachment_uri` output when creating the **destination** connection profile in the DMS Console (Private IP).
+
+Note: as of `hashicorp/google` provider v7.17.0, Terraform does not expose the DMS fields needed to attach a destination connection profile to a PSC service attachment for PostgreSQL, so the final DMS destination connection profile step is currently manual.
