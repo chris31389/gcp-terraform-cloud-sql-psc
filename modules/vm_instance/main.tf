@@ -9,10 +9,6 @@ locals {
   ))
 }
 
-data "google_compute_default_service_account" "this" {
-  project = var.project_id
-}
-
 resource "google_compute_network" "this" {
   count                   = var.network_self_link == null ? 1 : 0
   name                    = var.network_name
