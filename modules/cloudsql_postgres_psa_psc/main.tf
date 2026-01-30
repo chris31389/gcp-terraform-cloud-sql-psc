@@ -30,14 +30,14 @@ resource "google_service_networking_connection" "psa" {
   reserved_peering_ranges = [google_compute_global_address.psa_range.name]
 }
 
-resource "google_sql_database_instance" "this" {
-  name             = var.instance_name
-  region           = var.region
-  database_version = var.database_version
-
+resource "google_sql_database_instance" "postgres" {
+  name                = var.instance_name
+  region              = var.region
+  database_version    = var.database_version
   deletion_protection = var.deletion_protection
 
   settings {
+    edition           = var.edition
     tier              = var.tier
     availability_type = "ZONAL"
 

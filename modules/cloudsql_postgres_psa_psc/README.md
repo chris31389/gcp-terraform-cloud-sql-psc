@@ -7,6 +7,7 @@ Creates a minimal-cost Cloud SQL for PostgreSQL instance with:
 
 This module focuses on a simple, low-cost baseline:
 
+- `edition` defaults to `ENTERPRISE`
 - `tier` defaults to `db-f1-micro` (availability depends on region)
 - Zonal availability
 - `PD_HDD` and 10GB disk by default

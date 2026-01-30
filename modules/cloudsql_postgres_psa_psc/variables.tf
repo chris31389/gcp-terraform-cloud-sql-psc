@@ -14,6 +14,17 @@ variable "database_version" {
   default     = "POSTGRES_17"
 }
 
+variable "edition" {
+  description = "Cloud SQL edition. Supported values: ENTERPRISE or ENTERPRISE_PLUS."
+  type        = string
+  default     = "ENTERPRISE"
+
+  validation {
+    condition     = contains(["ENTERPRISE", "ENTERPRISE_PLUS"], var.edition)
+    error_message = "edition must be one of: ENTERPRISE, ENTERPRISE_PLUS."
+  }
+}
+
 variable "tier" {
   description = "Machine tier. Cheapest shared-core option is typically db-f1-micro (availability varies by region)."
   type        = string
