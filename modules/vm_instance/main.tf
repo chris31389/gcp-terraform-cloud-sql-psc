@@ -9,6 +9,10 @@ locals {
   ))
 }
 
+data "google_compute_default_service_account" "this" {
+  project = var.project_id
+}
+
 resource "google_compute_network" "this" {
   count                   = var.network_self_link == null ? 1 : 0
   name                    = var.network_name
@@ -59,6 +63,10 @@ resource "google_compute_instance" "this" {
   zone         = var.zone
   machine_type = var.machine_type
 
+  lifecycle {
+    ignore_changes = [metadata["ssh-keys"]]
+  }
+
   allow_stopping_for_update = var.allow_stopping_for_update
 
   labels = var.labels
@@ -83,7 +91,7 @@ resource "google_compute_instance" "this" {
   }
 
   service_account {
-    email  = var.service_account_email != null ? var.service_account_email : "default"
+    email  = var.service_account_email != null ? var.service_account_email : data.google_compute_default_service_account.this.email
     scopes = var.service_account_scopes
   }
 
