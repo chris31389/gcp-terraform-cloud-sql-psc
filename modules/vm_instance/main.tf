@@ -2,7 +2,11 @@ locals {
   network_self_link    = var.network_self_link != null ? var.network_self_link : google_compute_network.this[0].self_link
   subnetwork_self_link = var.subnetwork_self_link != null ? var.subnetwork_self_link : (var.network_self_link == null ? google_compute_subnetwork.this[0].self_link : null)
 
-  effective_tags = distinct(concat(var.tags, var.create_ssh_firewall_rule ? [var.ssh_tag] : []))
+  effective_tags = distinct(concat(
+    var.tags,
+    var.create_ssh_firewall_rule ? [var.ssh_tag] : [],
+    var.enable_iap_ssh ? [var.iap_ssh_tag] : []
+  ))
 }
 
 resource "google_compute_network" "this" {
@@ -27,6 +31,21 @@ resource "google_compute_firewall" "ssh" {
   direction     = "INGRESS"
   source_ranges = var.ssh_source_ranges
   target_tags   = [var.ssh_tag]
+
+  allow {
+    protocol = "tcp"
+    ports    = ["22"]
+  }
+}
+
+resource "google_compute_firewall" "iap_ssh" {
+  count   = var.enable_iap_ssh ? 1 : 0
+  name    = "${var.name}-allow-iap-ssh"
+  network = local.network_self_link
+
+  direction     = "INGRESS"
+  source_ranges = var.iap_ssh_source_ranges
+  target_tags   = [var.iap_ssh_tag]
 
   allow {
     protocol = "tcp"
@@ -74,5 +93,5 @@ resource "google_compute_instance" "this" {
     on_host_maintenance = var.spot ? "TERMINATE" : "MIGRATE"
   }
 
-  depends_on = [google_compute_firewall.ssh]
+  depends_on = [google_compute_firewall.ssh, google_compute_firewall.iap_ssh]
 }

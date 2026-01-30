@@ -113,6 +113,24 @@ variable "create_ssh_firewall_rule" {
   default     = false
 }
 
+variable "enable_iap_ssh" {
+  description = "Allow SSH via IAP TCP forwarding (source range 35.235.240.0/20) to this VM."
+  type        = bool
+  default     = true
+}
+
+variable "iap_ssh_tag" {
+  description = "Network tag used by the IAP SSH firewall rule. Applied automatically when enable_iap_ssh is true."
+  type        = string
+  default     = "allow-iap-ssh"
+}
+
+variable "iap_ssh_source_ranges" {
+  description = "Source CIDRs allowed for IAP SSH. Defaults to the documented IAP TCP forwarding range."
+  type        = list(string)
+  default     = ["35.235.240.0/20"]
+}
+
 variable "ssh_tag" {
   description = "Network tag used by the optional SSH firewall rule."
   type        = string
