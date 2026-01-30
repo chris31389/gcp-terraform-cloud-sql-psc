@@ -1,10 +1,10 @@
-# gcp-terraform-cloud-sql-psc
+# gcp-terraform-cloud-sql
 
 This repo is set up to run as a Terraform root module and includes a reusable module that creates a Cloud SQL for PostgreSQL instance using PSA and/or PSC.
 
 ## What it deploys
 
-- `module.postgres`: a Cloud SQL for PostgreSQL instance (private IP via PSA, PSC enabled)
+- `module.postgres`: a Cloud SQL for PostgreSQL instance (private IP via PSA)
 - `modules/vm_instance`: a minimal-cost GCE VM module (optional)
 
 ## Using Terraform Cloud (terraform.io) with VCS integration
@@ -52,3 +52,4 @@ Then:
 ## Module
 
 See `modules/cloudsql_postgres_psa_psc` for the reusable Cloud SQL module.
+See `modules/cloudsql_postgres_psa_only` for the reusable Cloud SQL module.
