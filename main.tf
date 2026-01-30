@@ -12,3 +12,19 @@ module "postgres" {
   # Allow PSC endpoints from this same project by default.
   psc_allowed_consumer_projects = toset([var.project_id])
 }
+
+module "vm" {
+  count  = var.create_vm ? 1 : 0
+  source = "./modules/vm_instance"
+
+  project_id = var.project_id
+  region     = var.region
+  zone       = "${var.region}-a"
+  name       = var.vm_name
+
+  # Place the VM in the same VPC/subnet as the Cloud SQL private IP (PSA) network.
+  network_self_link    = module.postgres.network_self_link
+  subnetwork_self_link = module.postgres.subnetwork_self_link
+
+  assign_public_ip = var.vm_assign_public_ip
+}

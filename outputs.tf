@@ -17,3 +17,13 @@ output "cloudsql_psc_service_attachment" {
   description = "PSC service attachment link for the Cloud SQL instance."
   value       = module.postgres.psc_service_attachment_link
 }
+
+output "vm_internal_ip" {
+  description = "VM internal IP address (null if create_vm=false)."
+  value       = try(module.vm[0].internal_ip, null)
+}
+
+output "vm_external_ip" {
+  description = "VM external IP address (null if create_vm=false or vm_assign_public_ip=false)."
+  value       = try(module.vm[0].external_ip, null)
+}

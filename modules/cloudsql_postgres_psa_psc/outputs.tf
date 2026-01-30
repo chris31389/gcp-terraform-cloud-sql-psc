@@ -27,3 +27,8 @@ output "network_self_link" {
   description = "VPC network used by the instance."
   value       = local.network_self_link
 }
+
+output "subnetwork_self_link" {
+  description = "Subnetwork self_link used by the instance when the module creates a subnet; null when using an existing network or when create_subnet is false."
+  value       = var.network_self_link == null && var.create_subnet ? google_compute_subnetwork.this[0].self_link : null
+}

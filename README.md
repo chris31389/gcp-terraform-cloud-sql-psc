@@ -5,6 +5,7 @@ This repo is set up to run as a Terraform root module and includes a reusable mo
 ## What it deploys
 
 - `module.postgres`: a Cloud SQL for PostgreSQL instance (private IP via PSA, PSC enabled)
+- `modules/vm_instance`: a minimal-cost GCE VM module (optional)
 
 ## Using Terraform Cloud (terraform.io) with VCS integration
 
