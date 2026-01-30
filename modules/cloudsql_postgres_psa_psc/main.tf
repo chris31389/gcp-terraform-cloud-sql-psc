@@ -55,19 +55,22 @@ resource "google_sql_database_instance" "postgres" {
       ipv4_enabled    = false
       private_network = local.network_self_link
 
-      psc_config {
-        psc_enabled               = var.psc_enabled
-        allowed_consumer_projects = var.psc_allowed_consumer_projects
+      dynamic "psc_config" {
+        for_each = var.psc_enabled ? [1] : []
+        content {
+          psc_enabled               = var.psc_enabled
+          allowed_consumer_projects = var.psc_allowed_consumer_projects
 
-        dynamic "psc_auto_connections" {
-          for_each = var.psc_auto_connections
-          content {
-            consumer_network            = psc_auto_connections.value.consumer_network
-            consumer_service_project_id = lookup(psc_auto_connections.value, "consumer_service_project_id", null)
+          dynamic "psc_auto_connections" {
+            for_each = var.psc_auto_connections
+            content {
+              consumer_network            = psc_auto_connections.value.consumer_network
+              consumer_service_project_id = lookup(psc_auto_connections.value, "consumer_service_project_id", null)
+            }
           }
-        }
 
-        network_attachment_uri = var.psc_network_attachment_uri
+          network_attachment_uri = var.psc_network_attachment_uri
+        }
       }
     }
   }
