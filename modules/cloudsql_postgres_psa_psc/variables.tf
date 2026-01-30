@@ -115,6 +115,27 @@ variable "psc_allowed_consumer_projects" {
   default     = []
 }
 
+variable "psc_auto_connections" {
+  description = <<-EOT
+  Optional PSC auto connections (Cloud SQL-managed PSC endpoints).
+
+  Each entry creates a PSC consumer endpoint automatically for the given consumer network.
+  consumer_network must be a full resource path like: projects/<host-project>/global/networks/<network>.
+  EOT
+
+  type = list(object({
+    consumer_network            = string
+    consumer_service_project_id = optional(string)
+  }))
+
+  default = []
+
+  validation {
+    condition     = var.psc_enabled || length(var.psc_auto_connections) == 0
+    error_message = "psc_auto_connections can only be set when psc_enabled is true."
+  }
+}
+
 variable "psc_network_attachment_uri" {
   description = "Optional network attachment URI for PSC. Leave null unless you specifically need it."
   type        = string

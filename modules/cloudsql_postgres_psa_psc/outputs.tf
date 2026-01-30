@@ -32,3 +32,8 @@ output "subnetwork_self_link" {
   description = "Subnetwork self_link used by the instance when the module creates a subnet; null when using an existing network or when create_subnet is false."
   value       = var.network_self_link == null && var.create_subnet ? google_compute_subnetwork.this[0].self_link : null
 }
+
+output "psc_auto_connections" {
+  description = "Details for PSC auto connections (Cloud SQL-managed PSC endpoints)."
+  value       = try(tolist(google_sql_database_instance.postgres.settings[0].ip_configuration[0].psc_config)[0].psc_auto_connections, [])
+}
