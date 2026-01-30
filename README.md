@@ -1,6 +1,6 @@
 # gcp-terraform-cloud-sql-psc
 
-This repo is set up to run as a Terraform root module and includes a reusable module that creates a Cloud SQL for PostgreSQL instance using PSA + PSC.
+This repo is set up to run as a Terraform root module and includes a reusable module that creates a Cloud SQL for PostgreSQL instance using PSA and/or PSC.
 
 ## What it deploys
 
