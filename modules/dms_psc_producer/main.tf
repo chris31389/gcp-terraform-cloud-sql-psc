@@ -203,6 +203,12 @@ resource "google_compute_service_attachment" "this" {
       connection_limit  = 10
     }
   }
+
+  lifecycle {
+    # Consumer connection approvals/limits are often managed outside Terraform (Console/API)
+    # and may be mutated by GCP. Ignore drift to avoid perpetual diffs.
+    ignore_changes = [consumer_accept_lists]
+  }
 }
 
 resource "google_compute_firewall" "allow_psc_to_proxy" {
