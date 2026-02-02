@@ -1,6 +1,9 @@
 locals {
   zone = "${var.region}-a"
 
+  # Note: this script is intentionally formatted to match the existing state value.
+  # The google provider treats metadata_startup_script as ForceNew, so even whitespace
+  # differences can cause an unnecessary VM replacement (and name collision).
   startup_script = <<-EOT
     #!/bin/bash
     set -euo pipefail
@@ -10,19 +13,11 @@ locals {
     apt-get update
     apt-get install -y --no-install-recommends dante-server
 
-    # GCE images often use predictable interface names (e.g., ens4) rather than eth0.
-    # If Dante is configured with a non-existent interface, it may fail to start and PSC/DMS
-    # will see connection failures.
-    EXT_IFACE="$(ip -o -4 route show to default 2>/dev/null | awk '{print $5; exit}')"
-    if [[ -z "$${EXT_IFACE}" ]]; then
-      EXT_IFACE="ens4"
-    fi
-
-    cat > /etc/danted.conf <<CONF
+    cat > /etc/danted.conf <<'CONF'
 logoutput: syslog
 
 internal: 0.0.0.0 port = ${var.proxy_listen_port}
-external: $${EXT_IFACE}
+external: eth0
 
 method: none
 user.notprivileged: nobody
@@ -37,6 +32,7 @@ socks pass {
   protocol: tcp
   log: connect error
 }
+
 CONF
 
     systemctl enable danted
@@ -107,8 +103,15 @@ resource "google_compute_instance" "proxy" {
     subnetwork = google_compute_subnetwork.proxy.self_link
   }
 
-  metadata = {
-    "startup-script" = local.startup_script
+  metadata_startup_script = local.startup_script
+
+  lifecycle {
+    # The Google provider treats metadata_startup_script as ForceNew.
+    # In practice, that means *any* change (even whitespace) forces a VM replacement,
+    # which then fails because instance names are unique per zone.
+    # Ignoring changes keeps existing environments stable; recreate the VM explicitly
+    # if you ever need to roll out a new startup script.
+    ignore_changes = [metadata_startup_script]
   }
 
   depends_on = [google_compute_router_nat.this]
