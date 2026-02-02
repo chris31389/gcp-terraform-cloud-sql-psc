@@ -17,59 +17,48 @@ The diagram below reflects the networking resources created by this repo:
 - Optional: the `dms_psc_producer` module creates a **PSC service attachment** backed by an internal forwarding rule to a small proxy VM, so **DMS can connect privately** without enabling PSC on the Cloud SQL instance
 
 ```mermaid
-flowchart LR
-  %% High-level connectivity between a consumer (DMS) and producer (this Terraform)
-  %% Legend:
-  %%   Solid arrows: primary traffic flow
-  %%   Dashed arrows: configuration/policy/placement relationship (not a hop)
+flowchart TB
+  %% Narrower GitHub-friendly layout (top-down)
+  %% Solid arrows: traffic flow
+  %% Dashed arrows: placement/config (not a hop)
 
-  subgraph Consumer["Consumer project (DMS)"]
-    DMS["Database Migration Service (DMS)\nDestination: Private IP"]
-  end
+  subgraph Project["GCP project"]
+    subgraph VPC["VPC network"]
+      CloudSQL["Cloud SQL (Postgres)\nPrivate IP (PSA)"]
+      PSA["PSA reserved range"]
+      SN["Service Networking"]
 
-  subgraph Producer["Producer project (this Terraform)"]
-    subgraph VPC["VPC network\n(created by cloudsql_postgres_psa_only unless provided)"]
-      SubnetMain["Main subnet\n(tf-cloudsql-subnet by default)"]
-      VM["GCE VM (vm_instance)\n(optional public IP)"]
+      VM["VM (optional)\nclient/test"]
 
-      PSA["PSA reserved range\n(google_compute_global_address purpose=VPC_PEERING)"]
-      SN["Service Networking connection\n(google_service_networking_connection to servicenetworking.googleapis.com)"]
-      CloudSQL["Cloud SQL for PostgreSQL\nPrivate IP via PSA"]
-
-      %% Optional DMS PSC producer setup
-      subgraph PSC["Optional: DMS PSC Producer (dms_psc_producer)"]
-        ProxySubnet["Proxy subnet\n(10.60.0.0/24 by default)"]
-        PSCNAT["PSC NAT subnet\n(purpose=PRIVATE_SERVICE_CONNECT)\n(10.60.1.0/24 by default)"]
-
+      subgraph PSC["Optional: PSC producer for DMS"]
+        SA["Service Attachment"]
+        ILBFR["Forwarding rule (ILB)\nTCP:5432"]
+        TargetInstance["Target instance"]
+        ProxyVM["Proxy VM\nDante SOCKS\n(name suffixed)"]
+        FW["Firewall\nPSC NAT → proxy:5432"]
+        PSCNAT["PSC NAT subnet"]
         Router["Cloud Router"]
-        NAT["Cloud NAT\n(proxy subnet egress)"]
-
-        FW["Firewall ingress allow\nfrom PSC NAT subnet to proxy:5432"]
-
-        ILBFR["Internal forwarding rule (ILB)\nTCP:5432 -> target instance"]
-        TargetInstance["Target instance\n(repoints during updates)"]
-        ProxyVM["Proxy VM (name is suffixed)\nDante SOCKS\nlistens on 5432"]
-        SA["PSC Service Attachment\n(target_service = forwarding rule)"]
+        NAT["Cloud NAT"]
+        ProxySubnet["Proxy subnet"]
       end
     end
+
+    DMS["DMS\n(destination profile)"]
   end
 
   %% PSA path
   PSA --> SN --> CloudSQL
   VM -->|"TCP 5432"| CloudSQL
 
-  %% Optional PSC-for-DMS path
+  %% PSC-for-DMS path
+  DMS -->|"PSC"| SA --> ILBFR --> TargetInstance --> ProxyVM -->|"SOCKS"| CloudSQL
+
+  %% Placement/config
   Router --> NAT
   NAT -.-> ProxyVM
   ProxySubnet -.-> ProxyVM
   PSCNAT -.-> SA
-  PSCNAT -.->|"source range"| FW
-  FW -.-> ProxyVM
-  ILBFR --> TargetInstance
-  TargetInstance --> ProxyVM
-  SA --> ILBFR
-  DMS -->|"Private Service Connect"| SA
-  ProxyVM -->|"SOCKS/TCP 5432"| CloudSQL
+  PSCNAT -.-> FW -.-> ProxyVM
 ```
 
 ## Using Terraform Cloud (terraform.io) with VCS integration
