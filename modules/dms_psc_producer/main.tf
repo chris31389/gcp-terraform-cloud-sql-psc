@@ -22,8 +22,11 @@ logoutput: syslog
 internal: 0.0.0.0 port = ${var.proxy_listen_port}
 external: $${EXT_IFACE}
 
-method: none
-user.notprivileged: nobody
+clientmethod: none
+socksmethod: none
+
+user.privileged: root
+user.unprivileged: nobody
 
 client pass {
   from: 0.0.0.0/0 to: 0.0.0.0/0
@@ -35,6 +38,7 @@ socks pass {
   # Allow any TCP port to the Cloud SQL private IP, but only to that single /32.
   from: 0.0.0.0/0 to: ${var.cloudsql_private_ip}/32 port = 1-65535
   protocol: tcp
+  command: connect
   log: connect error
 }
 
