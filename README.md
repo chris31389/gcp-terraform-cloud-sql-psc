@@ -120,12 +120,13 @@ This repo does **not** force a Terraform Cloud backend by default (so it can be 
   - Copy `tfc.backend.hcl.example` to `tfc.backend.hcl` (gitignored)
 3. Edit `tfc.backend.hcl` and set your Terraform Cloud `organization` + `workspaces.name`.
 4. Initialize and plan:
-  - `terraform init -backend-config=tfc.backend.hcl`
+  - `terraform init -backend-config="tfc.backend.hcl"`
   - `terraform plan`
 
 Notes:
 - Whether `plan/apply` executes **locally** or **in Terraform Cloud** depends on the Terraform Cloud workspace **Execution Mode**. Either way, state is stored in Terraform Cloud.
 - Terraform Cloud workspace variables are automatically used for **remote runs**. For **local CLI runs**, you must provide variables locally (for example via `local.auto.tfvars`, `TF_VAR_*`, or `-var/-var-file`).
+- On Windows PowerShell, prefer the `-backend-config="tfc.backend.hcl"` form (flag + separate value). Some setups may misparse the `-backend-config=...` form.
 
 Then:
 
