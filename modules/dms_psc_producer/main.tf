@@ -1,9 +1,6 @@
 locals {
   zone = "${var.region}-a"
 
-  # Note: this script is intentionally formatted to match the existing state value.
-  # The google provider treats metadata_startup_script as ForceNew, so even whitespace
-  # differences can cause an unnecessary VM replacement (and name collision).
   startup_script = <<-EOT
     #!/bin/bash
     set -euo pipefail
@@ -13,11 +10,17 @@ locals {
     apt-get update
     apt-get install -y --no-install-recommends dante-server
 
-    cat > /etc/danted.conf <<'CONF'
+    # Use the default route interface (commonly ens4 on GCE) rather than assuming eth0.
+    EXT_IFACE="$(ip -o -4 route show to default 2>/dev/null | awk '{print $5; exit}')"
+    if [[ -z "$${EXT_IFACE}" ]]; then
+      EXT_IFACE="ens4"
+    fi
+
+    cat > /etc/danted.conf <<CONF
 logoutput: syslog
 
 internal: 0.0.0.0 port = ${var.proxy_listen_port}
-external: eth0
+external: $${EXT_IFACE}
 
 method: none
 user.notprivileged: nobody
@@ -28,7 +31,9 @@ client pass {
 }
 
 socks pass {
-  from: 0.0.0.0/0 to: ${var.cloudsql_private_ip}/32 port = ${var.cloudsql_port}
+  # DMS uses a backend port that may differ from the engine port (often 3307).
+  # Allow any TCP port to the Cloud SQL private IP, but only to that single /32.
+  from: 0.0.0.0/0 to: ${var.cloudsql_private_ip}/32 port = 1-65535
   protocol: tcp
   log: connect error
 }
@@ -106,12 +111,9 @@ resource "google_compute_instance" "proxy" {
   metadata_startup_script = local.startup_script
 
   lifecycle {
-    # The Google provider treats metadata_startup_script as ForceNew.
-    # In practice, that means *any* change (even whitespace) forces a VM replacement,
-    # which then fails because instance names are unique per zone.
-    # Ignoring changes keeps existing environments stable; recreate the VM explicitly
-    # if you ever need to roll out a new startup script.
-    ignore_changes = [metadata_startup_script]
+    # Instance names must be unique per zone. When this VM needs replacement,
+    # enforce destroy-then-create to avoid 409 AlreadyExists.
+    create_before_destroy = false
   }
 
   depends_on = [google_compute_router_nat.this]
@@ -134,10 +136,6 @@ resource "google_compute_target_instance" "proxy" {
   zone    = local.zone
 
   instance = google_compute_instance.proxy.self_link
-
-  lifecycle {
-    create_before_destroy = true
-  }
 }
 
 resource "google_compute_forwarding_rule" "proxy" {
