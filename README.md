@@ -46,8 +46,9 @@ flowchart LR
 
         FW["Firewall ingress allow\nfrom PSC NAT subnet to proxy:5432"]
 
-        ILBFR["Internal forwarding rule\nTCP:5432 -> target instance"]
-        ProxyVM["Proxy VM\n(Dante SOCKS)\nlistens on 5432"]
+        ILBFR["Internal forwarding rule (ILB)\nTCP:5432 -> target instance"]
+        TargetInstance["Target instance\n(repoints during updates)"]
+        ProxyVM["Proxy VM (name is suffixed)\nDante SOCKS\nlistens on 5432"]
         SA["PSC Service Attachment\n(target_service = forwarding rule)"]
       end
     end
@@ -64,7 +65,8 @@ flowchart LR
   PSCNAT -.-> SA
   PSCNAT -.->|"source range"| FW
   FW -.-> ProxyVM
-  ILBFR --> ProxyVM
+  ILBFR --> TargetInstance
+  TargetInstance --> ProxyVM
   SA --> ILBFR
   DMS -->|"Private Service Connect"| SA
   ProxyVM -->|"SOCKS/TCP 5432"| CloudSQL
