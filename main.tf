@@ -19,6 +19,7 @@ module "vm" {
   name       = var.vm_name
 
   # Place the VM in the same VPC/subnet as the Cloud SQL private IP (PSA) network.
+  create_network       = false
   network_self_link    = module.postgres.network_self_link
   subnetwork_self_link = module.postgres.subnetwork_self_link
 

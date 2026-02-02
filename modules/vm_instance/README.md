@@ -47,6 +47,9 @@ module "vm" {
   zone       = "us-central1-a"
   name       = "tf-cheap-vm"
 
+  # Important: module outputs are unknown during plan, so you must set this explicitly.
+  create_network = false
+
   network_self_link    = module.postgres.network_self_link
   subnetwork_self_link = module.postgres.subnetwork_self_link
 }

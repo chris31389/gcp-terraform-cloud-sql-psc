@@ -1,6 +1,8 @@
 locals {
+  create_network = var.create_network != null ? var.create_network : (var.network_self_link == null)
+
   network_self_link    = var.network_self_link != null ? var.network_self_link : google_compute_network.this[0].self_link
-  subnetwork_self_link = var.subnetwork_self_link != null ? var.subnetwork_self_link : (var.network_self_link == null ? google_compute_subnetwork.this[0].self_link : null)
+  subnetwork_self_link = var.subnetwork_self_link != null ? var.subnetwork_self_link : (local.create_network ? google_compute_subnetwork.this[0].self_link : null)
 
   effective_tags = distinct(concat(
     var.tags,
@@ -10,13 +12,13 @@ locals {
 }
 
 resource "google_compute_network" "this" {
-  count                   = var.network_self_link == null ? 1 : 0
+  count                   = local.create_network ? 1 : 0
   name                    = var.network_name
   auto_create_subnetworks = false
 }
 
 resource "google_compute_subnetwork" "this" {
-  count         = var.network_self_link == null ? 1 : 0
+  count         = local.create_network ? 1 : 0
   name          = var.subnet_name
   region        = var.region
   network       = google_compute_network.this[0].self_link
@@ -62,7 +64,10 @@ resource "google_compute_instance" "this" {
   lifecycle {
     ignore_changes = [
       metadata["ssh-keys"],
-      service_account[0].email
+      service_account[0].email,
+      # Ephemeral external IPs can change outside of Terraform's control.
+      # This keeps plans stable while still allowing access_config to be added/removed.
+      network_interface[0].access_config[0].nat_ip
     ]
   }
 

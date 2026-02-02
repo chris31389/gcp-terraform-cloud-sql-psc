@@ -105,6 +105,7 @@ If you want to run locally:
 
 - Install Terraform >= 1.5
 - Authenticate to GCP (Application Default Credentials), or export `GOOGLE_CREDENTIALS`
+- If using google credentials, save the json credentials to a location and run `setx GOOGLE_APPLICATION_CREDENTIALS "[..Full_Path..]\gcp-sa.json"`
 
 Then:
 

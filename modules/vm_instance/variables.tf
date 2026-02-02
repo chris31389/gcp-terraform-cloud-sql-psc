@@ -66,14 +66,20 @@ variable "network_self_link" {
   default     = null
 }
 
+variable "create_network" {
+  description = "Whether this module should create a dedicated VPC + subnet. Set to false when network_self_link/subnetwork_self_link come from other modules (unknown during plan)."
+  type        = bool
+  default     = null
+}
+
 variable "subnetwork_self_link" {
   description = "Existing subnetwork self_link to use when network_self_link is provided."
   type        = string
   default     = null
 
   validation {
-    condition     = var.network_self_link == null || var.subnetwork_self_link != null
-    error_message = "When network_self_link is provided, subnetwork_self_link must also be provided (for custom-mode VPCs)."
+    condition     = var.create_network != false || (var.network_self_link != null && var.subnetwork_self_link != null)
+    error_message = "When create_network=false, both network_self_link and subnetwork_self_link must be provided (for custom-mode VPCs)."
   }
 }
 

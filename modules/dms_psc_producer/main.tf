@@ -114,12 +114,27 @@ resource "google_compute_instance" "proxy" {
   depends_on = [google_compute_router_nat.this]
 }
 
+resource "random_id" "proxy_target_instance" {
+  byte_length = 4
+
+  # Ensure the target instance name changes when the proxy VM is replaced,
+  # so the forwarding rule can repoint to the new target instance before
+  # Terraform destroys the old one.
+  keepers = {
+    proxy_instance_id = google_compute_instance.proxy.id
+  }
+}
+
 resource "google_compute_target_instance" "proxy" {
-  name    = "${var.proxy_name}-target"
+  name    = "${var.proxy_name}-target-${random_id.proxy_target_instance.hex}"
   project = var.project_id
   zone    = local.zone
 
   instance = google_compute_instance.proxy.self_link
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "google_compute_forwarding_rule" "proxy" {
