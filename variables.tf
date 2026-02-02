@@ -98,6 +98,18 @@ variable "dms_psc_service_attachment_name" {
   default     = "dms-psc-service-attachment"
 }
 
+variable "dms_psc_router_name" {
+  description = "Name of the Cloud Router used by the DMS PSC producer Cloud NAT (dms_psc_producer module)."
+  type        = string
+  default     = "dms-psc-router"
+}
+
+variable "dms_psc_nat_name" {
+  description = "Name of the Cloud NAT configuration used by the DMS PSC producer (dms_psc_producer module)."
+  type        = string
+  default     = "dms-psc-nat"
+}
+
 variable "dms_psc_labels" {
   description = "Labels applied to DMS PSC producer resources where supported."
   type        = map(string)

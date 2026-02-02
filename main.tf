@@ -49,5 +49,7 @@ module "dms_psc_producer" {
   consumer_accept_project_numbers = var.dms_psc_consumer_accept_project_numbers
 
   service_attachment_name = var.dms_psc_service_attachment_name
+  router_name             = var.dms_psc_router_name
+  nat_name                = var.dms_psc_nat_name
   labels                  = var.dms_psc_labels
 }

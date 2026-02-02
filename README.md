@@ -134,6 +134,32 @@ Then:
 - `terraform plan`
 - `terraform apply`
 
+## Troubleshooting
+
+### Error 409: resource already exists (Terraform Cloud runs)
+
+If you see errors like:
+
+`googleapi: Error 409: The resource 'projects/.../zones/.../instances/dms-psc-proxy' already exists`
+
+it means the GCP resource already exists but is **not tracked in the current Terraform state** (common when:
+you previously applied from a different Terraform Cloud workspace, deleted state, or created resources manually).
+
+You have two valid paths:
+
+1) **Import** the existing resource into the current state (recommended if you want Terraform to manage it).
+   - Configure local CLI to use the same Terraform Cloud workspace state (see "Local CLI with Terraform Cloud state").
+   - Then run (example VM import):
+     - `terraform import 'module.dms_psc_producer[0].google_compute_instance.proxy' 'projects/<PROJECT>/zones/<REGION>-a/instances/<PROXY_NAME>'`
+   - Re-run `terraform plan` and continue importing any other existing resources until the plan is clean.
+
+2) **Rename** the resources to avoid collisions (recommended if the existing resources belong to something else).
+   - In Terraform Cloud workspace variables, set unique names like:
+     - `dms_psc_proxy_name`
+     - `dms_psc_proxy_subnet_name`, `dms_psc_nat_subnet_name`
+     - `dms_psc_service_attachment_name`
+     - `dms_psc_router_name`, `dms_psc_nat_name`
+
 ## Module
 
 See `modules/cloudsql_postgres_psa_psc` for the reusable Cloud SQL module.
