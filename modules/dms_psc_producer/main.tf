@@ -14,7 +14,7 @@ locals {
     # If Dante is configured with a non-existent interface, it may fail to start and PSC/DMS
     # will see connection failures.
     EXT_IFACE="$(ip -o -4 route show to default 2>/dev/null | awk '{print $5; exit}')"
-    if [[ -z "${EXT_IFACE}" ]]; then
+    if [[ -z "$${EXT_IFACE}" ]]; then
       EXT_IFACE="ens4"
     fi
 
@@ -22,7 +22,7 @@ locals {
 logoutput: syslog
 
 internal: 0.0.0.0 port = ${var.proxy_listen_port}
-external: ${EXT_IFACE}
+external: $${EXT_IFACE}
 
 method: none
 user.notprivileged: nobody
