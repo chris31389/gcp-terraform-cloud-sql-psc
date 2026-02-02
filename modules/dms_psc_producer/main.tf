@@ -36,7 +36,7 @@ client pass {
 socks pass {
   # DMS uses a backend port that may differ from the engine port (often 3307).
   # Allow any TCP port to the Cloud SQL private IP, but only to that single /32.
-  from: 0.0.0.0/0 to: ${var.cloudsql_private_ip}/32 port = 1-65535
+  from: 0.0.0.0/0 to: ${var.cloudsql_private_ip}/32 port 1 - 65535
   protocol: tcp
   command: connect
   log: connect error
