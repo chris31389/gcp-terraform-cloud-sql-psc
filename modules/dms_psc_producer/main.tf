@@ -107,7 +107,9 @@ resource "google_compute_instance" "proxy" {
     subnetwork = google_compute_subnetwork.proxy.self_link
   }
 
-  metadata_startup_script = local.startup_script
+  metadata = {
+    "startup-script" = local.startup_script
+  }
 
   depends_on = [google_compute_router_nat.this]
 }
