@@ -45,6 +45,14 @@ CONF
   EOT
 }
 
+resource "random_id" "proxy_vm_suffix" {
+  byte_length = 2
+
+  keepers = {
+    startup_script_sha256 = sha256(local.startup_script)
+  }
+}
+
 resource "google_compute_subnetwork" "proxy" {
   name          = var.proxy_subnet_name
   project       = var.project_id
@@ -87,7 +95,7 @@ resource "google_compute_router_nat" "this" {
 }
 
 resource "google_compute_instance" "proxy" {
-  name         = var.proxy_name
+  name         = "${var.proxy_name}-${random_id.proxy_vm_suffix.hex}"
   project      = var.project_id
   zone         = local.zone
   machine_type = var.proxy_machine_type
@@ -111,9 +119,7 @@ resource "google_compute_instance" "proxy" {
   metadata_startup_script = local.startup_script
 
   lifecycle {
-    # Instance names must be unique per zone. When this VM needs replacement,
-    # enforce destroy-then-create to avoid 409 AlreadyExists.
-    create_before_destroy = false
+    create_before_destroy = true
   }
 
   depends_on = [google_compute_router_nat.this]
@@ -136,6 +142,12 @@ resource "google_compute_target_instance" "proxy" {
   zone    = local.zone
 
   instance = google_compute_instance.proxy.self_link
+
+  lifecycle {
+    # Create a new target instance first, then update the forwarding rule target,
+    # then destroy the old target instance. This avoids 400 resourceInUse errors.
+    create_before_destroy = true
+  }
 }
 
 resource "google_compute_forwarding_rule" "proxy" {
