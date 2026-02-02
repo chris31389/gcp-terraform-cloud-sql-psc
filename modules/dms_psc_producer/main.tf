@@ -1,27 +1,6 @@
 locals {
   zone = "${var.region}-a"
 
-  danted_conf = <<-EOT
-    logoutput: syslog
-
-    internal: 0.0.0.0 port = ${var.proxy_listen_port}
-    external: eth0
-
-    method: none
-    user.notprivileged: nobody
-
-    client pass {
-      from: 0.0.0.0/0 to: 0.0.0.0/0
-      log: connect error
-    }
-
-    socks pass {
-      from: 0.0.0.0/0 to: ${var.cloudsql_private_ip}/32 port = ${var.cloudsql_port}
-      protocol: tcp
-      log: connect error
-    }
-  EOT
-
   startup_script = <<-EOT
     #!/bin/bash
     set -euo pipefail
@@ -31,8 +10,33 @@ locals {
     apt-get update
     apt-get install -y --no-install-recommends dante-server
 
-    cat > /etc/danted.conf <<'CONF'
-${replace(local.danted_conf, "$", "$$")}
+    # GCE images often use predictable interface names (e.g., ens4) rather than eth0.
+    # If Dante is configured with a non-existent interface, it may fail to start and PSC/DMS
+    # will see connection failures.
+    EXT_IFACE="$(ip -o -4 route show to default 2>/dev/null | awk '{print $5; exit}')"
+    if [[ -z "${EXT_IFACE}" ]]; then
+      EXT_IFACE="ens4"
+    fi
+
+    cat > /etc/danted.conf <<CONF
+logoutput: syslog
+
+internal: 0.0.0.0 port = ${var.proxy_listen_port}
+external: ${EXT_IFACE}
+
+method: none
+user.notprivileged: nobody
+
+client pass {
+  from: 0.0.0.0/0 to: 0.0.0.0/0
+  log: connect error
+}
+
+socks pass {
+  from: 0.0.0.0/0 to: ${var.cloudsql_private_ip}/32 port = ${var.cloudsql_port}
+  protocol: tcp
+  log: connect error
+}
 CONF
 
     systemctl enable danted
