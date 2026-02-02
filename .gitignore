@@ -10,6 +10,9 @@ override.tf.json
 .terraformrc
 terraform.rc
 
+# Local Terraform Cloud backend config
+tfc.backend.hcl
+
 # Local-only convenience files
 *.auto.tfvars
 *.auto.tfvars.json

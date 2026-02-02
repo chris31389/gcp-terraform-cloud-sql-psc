@@ -1,0 +1,7 @@
+# Terraform Cloud backend config (copy to `tfc.backend.hcl`, which is gitignored)
+hostname     = "app.terraform.io"
+organization = "YOUR_TERRAFORM_CLOUD_ORG"
+
+workspaces {
+  name = "YOUR_TERRAFORM_CLOUD_WORKSPACE"
+}

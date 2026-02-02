@@ -105,7 +105,27 @@ If you want to run locally:
 
 - Install Terraform >= 1.5
 - Authenticate to GCP (Application Default Credentials), or export `GOOGLE_CREDENTIALS`
-- If using google credentials, save the json credentials to a location and run `setx GOOGLE_APPLICATION_CREDENTIALS "[..Full_Path..]\gcp-sa.json"`
+- If using Google credentials, save the JSON credentials to a location and run `setx GOOGLE_APPLICATION_CREDENTIALS "[..Full_Path..]\gcp-sa.json"`
+
+### Local CLI with Terraform Cloud state (optional)
+
+You can run `terraform plan` locally **while using Terraform Cloud for state + locking**.
+
+This repo does **not** force a Terraform Cloud backend by default (so it can be used in different environments). Instead, it provides opt-in example files.
+
+1. Log in to Terraform Cloud locally:
+  - `terraform login`
+2. Copy the example backend files:
+  - Copy `override.tf.example` to `override.tf` (gitignored)
+  - Copy `tfc.backend.hcl.example` to `tfc.backend.hcl` (gitignored)
+3. Edit `tfc.backend.hcl` and set your Terraform Cloud `organization` + `workspaces.name`.
+4. Initialize and plan:
+  - `terraform init -backend-config=tfc.backend.hcl`
+  - `terraform plan`
+
+Notes:
+- Whether `plan/apply` executes **locally** or **in Terraform Cloud** depends on the Terraform Cloud workspace **Execution Mode**. Either way, state is stored in Terraform Cloud.
+- Terraform Cloud workspace variables are automatically used for **remote runs**. For **local CLI runs**, you must provide variables locally (for example via `local.auto.tfvars`, `TF_VAR_*`, or `-var/-var-file`).
 
 Then:
 

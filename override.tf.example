@@ -1,0 +1,14 @@
+# Optional: use Terraform Cloud as the state backend when running Terraform locally.
+#
+# Usage:
+#   1) Copy this file to `override.tf` (gitignored)
+#   2) Copy `tfc.backend.hcl.example` to `tfc.backend.hcl` (gitignored)
+#   3) Run: terraform init -backend-config=tfc.backend.hcl
+#
+# Notes:
+# - This uses the "remote" backend (Terraform Cloud/HCP Terraform).
+# - Whether `plan/apply` executes locally vs remotely depends on the workspace execution mode.
+#
+terraform {
+  backend "remote" {}
+}
