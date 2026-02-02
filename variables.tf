@@ -115,3 +115,21 @@ variable "dms_psc_labels" {
   type        = map(string)
   default     = {}
 }
+
+variable "dms_psc_enable_iap_ssh" {
+  description = "Allow SSH via IAP TCP forwarding to the DMS PSC proxy VM."
+  type        = bool
+  default     = true
+}
+
+variable "dms_psc_iap_ssh_tag" {
+  description = "Network tag used by the IAP SSH firewall rule for the DMS PSC proxy VM."
+  type        = string
+  default     = "allow-iap-ssh"
+}
+
+variable "dms_psc_iap_ssh_source_ranges" {
+  description = "Source CIDRs allowed for IAP SSH to the DMS PSC proxy VM."
+  type        = list(string)
+  default     = ["35.235.240.0/20"]
+}

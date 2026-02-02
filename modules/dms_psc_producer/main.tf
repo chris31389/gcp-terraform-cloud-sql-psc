@@ -94,6 +94,22 @@ resource "google_compute_router_nat" "this" {
   }
 }
 
+resource "google_compute_firewall" "iap_ssh" {
+  count   = var.enable_iap_ssh ? 1 : 0
+  name    = "${var.proxy_name}-allow-iap-ssh"
+  project = var.project_id
+  network = var.network_self_link
+
+  direction     = "INGRESS"
+  source_ranges = var.iap_ssh_source_ranges
+  target_tags   = [var.iap_ssh_tag]
+
+  allow {
+    protocol = "tcp"
+    ports    = ["22"]
+  }
+}
+
 resource "google_compute_instance" "proxy" {
   name         = "${var.proxy_name}-${random_id.proxy_vm_suffix.hex}"
   project      = var.project_id
@@ -101,7 +117,10 @@ resource "google_compute_instance" "proxy" {
   machine_type = var.proxy_machine_type
   labels       = var.labels
 
-  tags = ["dms-psc-proxy"]
+  tags = distinct(concat(
+    ["dms-psc-proxy"],
+    var.enable_iap_ssh ? [var.iap_ssh_tag] : []
+  ))
 
   boot_disk {
     initialize_params {
@@ -122,7 +141,7 @@ resource "google_compute_instance" "proxy" {
     create_before_destroy = true
   }
 
-  depends_on = [google_compute_router_nat.this]
+  depends_on = [google_compute_router_nat.this, google_compute_firewall.iap_ssh]
 }
 
 resource "random_id" "proxy_target_instance" {

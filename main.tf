@@ -51,5 +51,8 @@ module "dms_psc_producer" {
   service_attachment_name = var.dms_psc_service_attachment_name
   router_name             = var.dms_psc_router_name
   nat_name                = var.dms_psc_nat_name
+  enable_iap_ssh          = var.dms_psc_enable_iap_ssh
+  iap_ssh_tag             = var.dms_psc_iap_ssh_tag
+  iap_ssh_source_ranges   = var.dms_psc_iap_ssh_source_ranges
   labels                  = var.dms_psc_labels
 }
